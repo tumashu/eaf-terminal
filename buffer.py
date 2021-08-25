@@ -23,7 +23,7 @@ from PyQt5.QtCore import QUrl, QTimer, QPointF, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QApplication
 from core.webengine import BrowserBuffer
-from core.utils import PostGui, get_free_port, interactive, string_to_base64, eval_in_emacs, message_to_emacs, get_emacs_vars
+from core.utils import PostGui, get_free_port, interactive, string_to_base64, eval_in_emacs, message_to_emacs, get_emacs_vars, get_emacs_face_foregrounds
 import os
 import subprocess
 import signal
@@ -105,15 +105,35 @@ class AppBuffer(BrowserBuffer):
     def open_terminal_page(self):
         theme = "dark" if self.dark_mode_is_enabled() else "light"
 
+        (black, red, green, yellow, blue, magenta, cyan, white) = get_emacs_face_foregrounds(
+            ["term-color-black",
+             "term-color-red",
+             "term-color-green",
+             "term-color-yellow",
+             "term-color-blue",
+             "term-color-magenta",
+             "term-color-cyan",
+             "term-color-white"])
+
+
         with request.urlopen(self.index_file) as f:
-            html = f.read().decode("utf-8").replace("%1", str(self.port))\
-                                           .replace("%2", self.http_url)\
-                                           .replace("%3", theme)\
-                                           .replace("%4", str(self.terminal_font_size))\
-                                           .replace("%5", self.current_directory)\
-                                           .replace("%6", self.terminal_font_family)\
-                                           .replace("%7", self.theme_background_color)\
-                                           .replace("%8", self.theme_foreground_color)
+            html = f.read().decode("utf-8").replace("%{port}", str(self.port))\
+                                           .replace("%{http_url}", self.http_url)\
+                                           .replace("%{theme}", theme)\
+                                           .replace("%{terminal_font_size}", str(self.terminal_font_size))\
+                                           .replace("%{current_directory}", self.current_directory)\
+                                           .replace("%{terminal_font_family}", self.terminal_font_family)\
+                                           .replace("%{theme_background_color}", self.theme_background_color)\
+                                           .replace("%{theme_foreground_color}", self.theme_foreground_color)\
+                                           .replace("%{theme_black_color}", black)\
+                                           .replace("%{theme_red_color}", red)\
+                                           .replace("%{theme_green_color}", green)\
+                                           .replace("%{theme_yellow_color}", yellow)\
+                                           .replace("%{theme_blue_color}", blue)\
+                                           .replace("%{theme_magenta_color}", magenta)\
+                                           .replace("%{theme_cyan_color}", cyan)\
+                                           .replace("%{theme_white_color}", white)
+
             self.buffer_widget.setHtml(html)
 
     def checking_status(self):
